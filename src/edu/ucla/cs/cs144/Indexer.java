@@ -49,7 +49,7 @@ public class Indexer {
 	}
 
         // Erase existing index
-        getIndexWriter(true);
+        IndexWriter writer = getIndexWriter(true);
 
         // Index everthing we need to (as individual items)
     try
@@ -57,13 +57,25 @@ public class Indexer {
         Statement stmt = conn.createStatement();
 
         ResultSet items = stmt.executeQuery(
-            "SELECT a.item_id, a.name, a.description, GROUP_CONCAT(b.category SEPARATOR ' ') FROM Item as a LEFT OUTER JOIN ItemCategory as b ON a.item_id = b.item_id GROUP BY a.item_id;"
+            "SELECT a.item_id, a.name, a.description, GROUP_CONCAT(" +
+            "b.category SEPARATOR ' ') FROM Item as a LEFT OUTER JOIN " +
+            "ItemCategory as b ON a.item_id = b.item_id GROUP BY a.item_id;"
         );
     } catch (SQLException ex) {
         System.err.println("SQLException: " + ex.getMessage());
         closeIndexWriter();
         System.exit(1);
     }
+
+        while (items.next()) {
+            Document doc = new Document();
+            doc.add(new Field("id", item.getInt("item_id"), Field.Store.YES, Field.Index.NO));
+            doc.add(new Field("name", item.getString("name"), Field.Store.YES, Field.Index.TOKENIZED));
+            doc.add(new Field("description", item.getString("description"), Field.Store.NO, Field.Index.TOKENIZED));
+            doc.add(new Field("category", item.getString("category"), Field.Store.YES, Field.Index.TOKENIZED));
+            String content = item.getString("name") + " " + item.getString("description") + " " + item.getString("category");
+            doc.add(new Field("content", content, Field.Store.NO, Field.Index.TOKENIZED));
+        }
 
         // Close the index writer
         closeIndexWriter();
