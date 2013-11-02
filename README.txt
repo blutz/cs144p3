@@ -21,7 +21,9 @@ Create indexes on:
 And additionally store the fields:
     Item.item_id
 
-This is because the only fields that need inverted index lookups are name, description, and category. However, to be able to talk to MySQL again and know what item to reference, we need to store the item_id in Lucene.
+This is because the only fields that need inverted index lookups are name,
+description, and category. However, to be able to talk to MySQL again and know
+what item to reference, we need to store the item_id in Lucene.
 
 MySQL
 -----
