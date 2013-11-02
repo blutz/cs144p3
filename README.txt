@@ -17,9 +17,9 @@ Create indexes on:
     Item.name
     Item.description
     ItemCategory.category
+    And the concatenation of the above three fields
 And additionally store the fields:
     Item.item_id
-    ItemCategory.item_id
 
 This is because the only fields that need inverted index lookups are name, description, and category. However, to be able to talk to MySQL again and know what item to reference, we need to store the item_id in Lucene.
 
