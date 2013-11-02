@@ -18,6 +18,17 @@ public class Indexer {
     public Indexer() {
     }
 
+    private IndexWriter indexWriter = null;
+
+    public IndexWriter getIndexWriter(boolean create) throws IOException {
+        if (indexWriter == null) {
+            indexWriter = new IndexWriter("index-directory",
+                                          new StandardAnalyzer(),
+                                          create);
+        }
+        return indexWriter;
+    }
+ 
     public void rebuildIndexes() {
 
         Connection conn = null;
