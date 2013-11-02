@@ -14,12 +14,12 @@ PART A.2: DECIDE INDEXES TO CREATE
 Lucene
 ------
 Create indexes on:
-    Item.name
-    Item.description
-    ItemCategory.category
-    And the concatenation of the above three fields
+    Item.name (store & index)
+    Item.description (don't store & index)
+    ItemCategory.category (store & index)
+    And the concatenation of the above three fields (don't store & index)
 And additionally store the fields:
-    Item.item_id
+    Item.item_id (store & don't index)
 
 This is because the only fields that need inverted index lookups are name,
 description, and category. However, to be able to talk to MySQL again and know
