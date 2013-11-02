@@ -59,21 +59,22 @@ public class Indexer {
         ResultSet items = stmt.executeQuery(
             "SELECT a.item_id, a.name, a.description, GROUP_CONCAT(b.category SEPARATOR ' ') as category FROM Item as a LEFT OUTER JOIN ItemCategory as b ON a.item_id = b.item_id GROUP BY a.item_id;"
         );
+        while (items.next()) {
+            Document doc = new Document();
+            doc.add(new Field("id", items.getString("item_id"), Field.Store.YES, Field.Index.NO));
+            doc.add(new Field("name", items.getString("name"), Field.Store.YES, Field.Index.TOKENIZED));
+            doc.add(new Field("description", items.getString("description"), Field.Store.NO, Field.Index.TOKENIZED));
+            doc.add(new Field("category", items.getString("category"), Field.Store.YES, Field.Index.TOKENIZED));
+            String content = items.getString("name") + " " + items.getString("description") + " " + items.getString("category");
+            doc.add(new Field("content", content, Field.Store.NO, Field.Index.TOKENIZED));
+            writer.addDocument(doc);
+        }
+
     } catch (SQLException ex) {
         System.err.println("SQLException: " + ex.getMessage());
         closeIndexWriter();
         System.exit(1);
     }
-
-        while (items.next()) {
-            Document doc = new Document();
-            doc.add(new Field("id", item.getInt("item_id"), Field.Store.YES, Field.Index.NO));
-            doc.add(new Field("name", item.getString("name"), Field.Store.YES, Field.Index.TOKENIZED));
-            doc.add(new Field("description", item.getString("description"), Field.Store.NO, Field.Index.TOKENIZED));
-            doc.add(new Field("category", item.getString("category"), Field.Store.YES, Field.Index.TOKENIZED));
-            String content = item.getString("name") + " " + item.getString("description") + " " + item.getString("category");
-            doc.add(new Field("content", content, Field.Store.NO, Field.Index.TOKENIZED));
-        }
 
         // Close the index writer
         closeIndexWriter();
@@ -91,3 +92,4 @@ public class Indexer {
         idx.rebuildIndexes();
     }
 }
+
