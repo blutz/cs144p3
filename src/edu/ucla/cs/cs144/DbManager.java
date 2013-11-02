@@ -9,7 +9,7 @@ public class DbManager {
         static private String dbname = "CS144";
         static private String username = "cs144";
         static private String password = "";
-	
+
 	/**
 	 * Opens a database connection
 	 * @param dbName The database name
@@ -18,15 +18,15 @@ public class DbManager {
 	 * @throws SQLException
 	 */
 	public static Connection getConnection(boolean readOnly)
-	throws SQLException {        
+	throws SQLException {
             Connection conn = DriverManager.getConnection(
                 databaseURL + dbname, username, password);
-            conn.setReadOnly(readOnly);        
+            conn.setReadOnly(readOnly);
             return conn;
         }
-	
+
 	private DbManager() {}
-	
+
 	static {
 		try {
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
@@ -36,3 +36,4 @@ public class DbManager {
 		}
 	}
 }
+

@@ -13,11 +13,11 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 
 public class Indexer {
-    
+
     /** Creates a new instance of Indexer */
     public Indexer() {
     }
- 
+
     public void rebuildIndexes() {
 
         Connection conn = null;
@@ -41,12 +41,12 @@ public class Indexer {
          * classes to create an index and populate it with Items data.
          * Read our tutorial on Lucene as well if you don't know how.
          *
-         * As part of this development, you may want to add 
-         * new methods and create additional Java classes. 
+         * As part of this development, you may want to add
+         * new methods and create additional Java classes.
          * If you create new classes, make sure that
          * the classes become part of "edu.ucla.cs.cs144" package
          * and place your class source files at src/edu/ucla/cs/cs144/.
-	 * 
+	 *
 	 */
 
 
@@ -56,10 +56,10 @@ public class Indexer {
 	} catch (SQLException ex) {
 	    System.out.println(ex);
 	}
-    }    
+    }
 
     public static void main(String args[]) {
         Indexer idx = new Indexer();
         idx.rebuildIndexes();
-    }   
+    }
 }
