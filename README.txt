@@ -26,7 +26,7 @@ This is because the only fields that need inverted index lookups are name, descr
 MySQL
 -----
 Create indexes on:
-    Item.seller
+    Item.seller_id
     Item.buy_now_price
     Item.ends
     Bid.item_id
