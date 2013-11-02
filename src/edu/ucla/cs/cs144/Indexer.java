@@ -23,8 +23,9 @@ public class Indexer {
     private IndexWriter indexWriter = null;
 
     public IndexWriter getIndexWriter(boolean create) throws IOException {
+        String indexDir = System.getenv("LUCENE_INDEX") + "/index1";
         if (indexWriter == null) {
-            indexWriter = new IndexWriter("index-directory",
+            indexWriter = new IndexWriter(indexDir,
                                           new StandardAnalyzer(),
                                           create);
         }
