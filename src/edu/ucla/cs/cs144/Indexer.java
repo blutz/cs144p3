@@ -52,7 +52,18 @@ public class Indexer {
         getIndexWriter(true);
 
         // Index everthing we need to (as individual items)
-        // TODO
+    try
+    {
+        Statement stmt = conn.createStatement();
+
+        ResultSet items = stmt.executeQuery(
+            "SELECT a.item_id, a.name, a.description, GROUP_CONCAT(b.category SEPARATOR ' ') FROM Item as a LEFT OUTER JOIN ItemCategory as b ON a.item_id = b.item_id GROUP BY a.item_id;"
+        );
+    } catch (SQLException ex) {
+        System.err.println("SQLException: " + ex.getMessage());
+        closeIndexWriter();
+        System.exit(1);
+    }
 
         // Close the index writer
         closeIndexWriter();
