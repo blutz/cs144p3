@@ -17,7 +17,7 @@ Lucene
 MySQL
 -----
 Create indexes on:
-    Item.seller
+    Item.seller_id
     Item.buy_now_price
     Item.ends
     Bid.item_id
