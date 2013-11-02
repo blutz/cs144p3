@@ -23,6 +23,13 @@ Create indexes on:
     Bid.item_id
     Bid.user_id
 
-These MySQL indexes were chosen because users need to be able to search on item name, category, seller, buy price, bidder, ending time, and description. Because item name, category, and description only need to be searched using inverted indexes, it is a waste to create indexes on them in MySQL.
+These MySQL indexes were chosen because users need to be able to search on item
+name, category, seller, buy price, bidder, ending time, and description.
+Because item name, category, and description only need to be searched using
+inverted indexes, it is a waste to create indexes on them in MySQL.
 
-Indexes on Bid.item_id and Bid.user_id are created because the primary key on Bid is (item_id, user_id, time), rather than a single field. Though this extra index can be considered a waste, it is a tradeoff for not creating a unique ID for each of the bids.
+Indexes on Bid.item_id and Bid.user_id are created because the primary key on
+Bid is (item_id, user_id, time), rather than a single field. Though this extra
+index can be considered a waste, it is a tradeoff for not creating a unique ID
+for each of the bids.
+
