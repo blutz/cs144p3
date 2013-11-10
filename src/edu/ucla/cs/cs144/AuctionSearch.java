@@ -66,7 +66,13 @@ public class AuctionSearch implements IAuctionSearch {
 		createSearchEngine();
 	    Query parsedQuery = parser.parse(query);
 	    Hits hits = searcher.search(parsedQuery);
-		return new SearchResult[0];
+	    SearchResult[] results = new SearchResult[hits.length()];
+
+	    for(int i = 0; i < hits.length(); i++) {
+		   Document doc = hits.doc(i);
+		   results[i] = new SearchResult(doc.get("id"), doc.get("name"));
+		}
+		return results;
 	} catch (ParseException e)
 	{
 		return new SearchResult[0];
