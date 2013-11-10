@@ -306,19 +306,30 @@ public class AuctionSearch implements IAuctionSearch {
         }
 
         query = con.prepareStatement(
-            "SELECT * FROM Bid WHERE item_id = ?");
+            "SELECT item_id, time, amount, location, country, Bid.user_id as user_id, rating " +
+            "FROM Bid LEFT JOIN User ON User.user_id = Bid.user_id WHERE item_id = ?");
         query.setInt(1, Integer.parseInt(itemId));
         rs = query.executeQuery();
         while (rs.next()) {
             String bidder_id = rs.getString("user_id");
+            String bidder_rating = rs.getString("rating");
             String time = rs.getString("time");
-            String amount = rs.getString("amount");
+            String amount = "$" + rs.getString("amount");
+            String bidder_location = rs.getString("location");
+            String bidder_country = rs.getString("country");
 
             xmlBidData += "\t\t<Bid>\n";
-            xmlBidData += "\t\t\t<Bidder>\n";
-            // TODO: These are optional
-            // xmlBidData += "\t\t\t\t<Location>" + + "</Location>\n";
-            // xmlBidData += "\t\t\t\t<Country>" + + "</Country>\n";
+            xmlBidData += "\t\t\t<Bidder UserID=\"" + bidder_id + "\" Rating=\""
+                          + bidder_rating + "\">\n";
+
+            // These are optional
+            if (!bidder_location.isEmpty()) {
+                xmlBidData += "\t\t\t\t<Location>" + bidder_location + "</Location>\n";
+            }
+            if (!bidder_country.isEmpty()) {
+                xmlBidData += "\t\t\t\t<Country>" + bidder_country + "</Country>\n";
+            }
+
             // TODO: Parse time format
             xmlBidData += "\t\t\t\t<Time>" + time + "</Time>\n";
             xmlBidData += "\t\t\t\t<Amount>" + amount + "</Amount>\n";
@@ -356,20 +367,24 @@ public class AuctionSearch implements IAuctionSearch {
         System.err.println("SQL exception occurred");
     }
    		String xmlData = "";
-        xmlData += "<Item>\n";
+        xmlData += "<Item ItemID=\"" + item_id + "\">\n";
         xmlData += "\t<Name>" + name + "</Name>\n";
         for(int i = 0; i < categories.size(); i++) {
             xmlData += "\t<Category>" + categories.get(i) + "</Category>\n";
         }
         xmlData += "\t<Currently>"+ highestBid + "</Currently>\n";
-        if (buy_now_price != null && !buy_now_price.isEmpty()) {
+        if (!buy_now_price.isEmpty()) {
             xmlData += "\t<Buy_Price>" + buy_now_price + "</Buy_Price>\n";
         }
         xmlData += "\t<First_Bid>" + minimum_bid + "</First_Bid>\n";
         xmlData += "\t<Number_of_Bids>" + num_bids + "</Number_of_Bids>\n";
-        xmlData += "\t<Bids>\n";
-        xmlData += xmlBidData;
-        xmlData += "\t</Bids>\n";
+        if (num_bids.equals("0")) {
+            xmlData += "<Bids/>\n";
+        } else {
+            xmlData += "\t<Bids>\n";
+            xmlData += xmlBidData;
+            xmlData += "\t</Bids>\n";
+        }
         xmlData += "\t<Location>" + location +  "</Location>\n";
         xmlData += "\t<Country>" + country + "</Country>\n";
         xmlData += "\t<Started>" + started + "</Started>\n";
