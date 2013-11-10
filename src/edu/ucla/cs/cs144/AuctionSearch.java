@@ -78,7 +78,7 @@ public class AuctionSearch implements IAuctionSearch {
 		   results[i] = new SearchResult(doc.get("id"), doc.get("name"));
 		}
 		int to = numResultsToSkip + numResultsToReturn;
-		if (numResultsToReturn == 0)
+		if (numResultsToReturn == 0 || to > results.length)
 			to = results.length;
 		return Arrays.copyOfRange(results, numResultsToSkip, to);
 	} catch (ParseException e)
@@ -103,7 +103,6 @@ public class AuctionSearch implements IAuctionSearch {
 		for(int i = 0; i < constraints.length; i++)
 		{
 			String name = constraints[i].getFieldName();
-			System.err.println("Field name: " + name + " Value: " + constraints[i].getValue());
 			if(name.equals(FieldName.ItemName) 
 				|| name.equals(FieldName.Category) 
 				|| name.equals(FieldName.Description))
@@ -163,8 +162,8 @@ public class AuctionSearch implements IAuctionSearch {
 				}
 			}
 		}
-		System.err.println("Lucene Query: " + queryLuceneText);
-		System.err.println("SQL Query: " + querySqlText + ";");
+		// System.err.println("Lucene Query: " + queryLuceneText);
+		// System.err.println("SQL Query: " + querySqlText + ";");
 
 		// Now actually execute these queries. By the end of this, all results
 		// should be in 'result'
@@ -242,12 +241,25 @@ public class AuctionSearch implements IAuctionSearch {
 	}
 
 
-		// TODO: Make this bigger or fix it
-		// int to = numResultsToSkip + numResultsToReturn;
-		// if (numResultsToReturn == 0)
-		// 	to = results.length;
-		// return Arrays.copyOfRange(results, numResultsToSkip, to);
-		return new SearchResult[0];
+		// Now check what we want to return
+		if(queryLucene && !querySql)
+		{
+			int to = numResultsToSkip + numResultsToReturn;
+			if (numResultsToReturn == 0 || to > luceneResults.length)
+				to = luceneResults.length;
+			return Arrays.copyOfRange(luceneResults, numResultsToSkip, to);
+		}
+		else if(querySql)
+		{
+			int to = numResultsToSkip + numResultsToReturn;
+			if (numResultsToReturn == 0 || to > sqlResults.length)
+				to = sqlResults.length;
+			return Arrays.copyOfRange(sqlResults, numResultsToSkip, to);
+		}
+		else
+		{
+			return new SearchResult[0];
+		}
 	}
 
 	public String getXMLDataForItemId(String itemId) {
