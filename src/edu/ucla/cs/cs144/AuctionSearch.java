@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.PreparedStatement;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -199,10 +200,123 @@ public class AuctionSearch implements IAuctionSearch {
 	}
 
 	public String getXMLDataForItemId(String itemId) {
-		// TODO: Your code here!
-		return null;
+        String item_id = "",
+                name = "",
+                buy_now_price = "",
+                minimum_bid = "",
+                started = "",
+                ends = "",
+                seller_id = "",
+                description = "",
+                xmlBidData = "",
+                highestBid = "",
+                location = "",
+                country = "",
+                num_bids = "",
+                sellerRating = "";
+
+        List<String> categories = new ArrayList<String>();
+
+    try {
+        Connection con = DbManager.getConnection(false);
+        PreparedStatement query = con.prepareStatement(
+            "SELECT * FROM Item WHERE item_id = ?");
+        query.setInt(1, Integer.parseInt(itemId));
+        ResultSet rs = query.executeQuery();
+        while (rs.next()) {
+            item_id = rs.getString("item_id");
+            name = rs.getString("name");
+            buy_now_price = "$" + rs.getString("buy_now_price");
+            minimum_bid = "$" + rs.getString("minimum_bid");
+            started = rs.getString("started");
+            ends = rs.getString("ends");
+            seller_id = rs.getString("seller_id");
+            description = rs.getString("description");
+        }
+
+        query = con.prepareStatement(
+            "SELECT * FROM ItemCategory WHERE item_id = ?");
+        query.setInt(1, Integer.parseInt(itemId));
+        rs = query.executeQuery();
+        while (rs.next()) {
+            categories.add(rs.getString("category"));
+        }
+
+        query = con.prepareStatement(
+            "SELECT * FROM Bid WHERE item_id = ?");
+        query.setInt(1, Integer.parseInt(itemId));
+        rs = query.executeQuery();
+        while (rs.next()) {
+            String bidder_id = rs.getString("user_id");
+            String time = rs.getString("time");
+            String amount = rs.getString("amount");
+
+            xmlBidData += "\t\t<Bid>\n";
+            xmlBidData += "\t\t\t<Bidder>\n";
+            // TODO: These are optional
+            // xmlBidData += "\t\t\t\t<Location>" + + "</Location>\n";
+            // xmlBidData += "\t\t\t\t<Country>" + + "</Country>\n";
+            // TODO: Parse time format
+            xmlBidData += "\t\t\t\t<Time>" + time + "</Time>\n";
+            xmlBidData += "\t\t\t\t<Amount>" + amount + "</Amount>\n";
+            xmlBidData += "\t\t\t</Bidder>\n";
+            xmlBidData += "\t\t</Bid>\n";
+        }
+
+        query = con.prepareStatement(
+            "SELECT COUNT(*) as num_bids FROM Bid WHERE item_id = ?");
+        query.setInt(1, Integer.parseInt(itemId));
+        rs = query.executeQuery();
+        while (rs.next()) {
+            num_bids = rs.getString("num_bids");
+        }
+
+        query = con.prepareStatement(
+            "SELECT amount FROM Bid WHERE item_id = ? ORDER BY amount DESC LIMIT 1");
+        query.setInt(1, Integer.parseInt(itemId));
+        rs = query.executeQuery();
+        while (rs.next()) {
+            highestBid = "$" + rs.getString("amount");
+        }
+
+        query = con.prepareStatement(
+            "SELECT * FROM User WHERE user_id = ?");
+        query.setString(1, seller_id);
+        rs = query.executeQuery();
+        while (rs.next()) {
+            sellerRating = rs.getString("rating");
+            location = rs.getString("location");
+            country = rs.getString("country");
+        }
+    }
+    catch (SQLException e) {
+        System.err.println("SQL exception occurred");
+    }
+   		String xmlData = "";
+        xmlData += "<Item>\n";
+        xmlData += "\t<Name>" + name + "</Name>\n";
+        for(int i = 0; i < categories.size(); i++) {
+            xmlData += "\t<Category>" + categories.get(i) + "</Category>\n";
+        }
+        xmlData += "\t<Currently>"+ highestBid + "</Currently>\n";
+        if (buy_now_price != null && !buy_now_price.isEmpty()) {
+            xmlData += "\t<Buy_Price>" + buy_now_price + "</Buy_Price>\n";
+        }
+        xmlData += "\t<First_Bid>" + minimum_bid + "</First_Bid>\n";
+        xmlData += "\t<Number_of_Bids>" + num_bids + "</Number_of_Bids>\n";
+        xmlData += "\t<Bids>\n";
+        xmlData += xmlBidData;
+        xmlData += "\t</Bids>\n";
+        xmlData += "\t<Location>" + location +  "</Location>\n";
+        xmlData += "\t<Country>" + country + "</Country>\n";
+        xmlData += "\t<Started>" + started + "</Started>\n";
+        xmlData += "\t<Ends>" + ends +  "</Ends>\n";
+        xmlData += "\t<Seller UserId=\"" + seller_id + "\" Rating=\"" + sellerRating + "\"/>\n";
+        xmlData += "\t<Description>" + description + "</Description>\n";
+        xmlData += "</Item>";
+		return xmlData;
 	}
-	
+
 	public String echo(String message) {
 		return message;
 	}
