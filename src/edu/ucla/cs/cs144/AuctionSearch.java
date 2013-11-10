@@ -94,6 +94,7 @@ public class AuctionSearch implements IAuctionSearch {
 		boolean queryLucene = false;
 		String queryLuceneText = "";
 		String querySqlText = "";
+		// Get the Lucene and MySQL queries
 		for(int i = 0; i < constraints.length; i++)
 		{
 			String name = constraints[i].getFieldName();
@@ -125,16 +126,36 @@ public class AuctionSearch implements IAuctionSearch {
 				// This requres a MySQL query
 				if(querySql)
 				{
-					querySqlText += " OR ";
+					querySqlText += " AND ";
 				}
 				else
 				{
-					querySqlText = "SELECT ";
+					querySqlText = "SELECT Item.item_id, Item.name FROM Item " +
+						"LEFT JOIN Bid ON (Item.item_id = Bid.item_id) WHERE";
 					querySql = true;
+				}
+				if(name == FieldName.SellerId)
+				{
+					querySqlText += " Item.seller_id = ?";
+				}
+				else if (name == FieldName.BuyPrice)
+				{
+					querySqlText += " Item.buy_now_price = ?";
+				}
+				else if (name == FieldName.BidderId)
+				{
+					querySqlText += " Bid.user_id = ?";
+				}
+				else if (name == FieldName.EndTime)
+				{
+					querySqlText += " Item.ends = ?";
 				}
 			}
 		}
+		if(querySql)
+			querySqlText += ";";
 		System.err.println("Lucene Query: " + queryLuceneText);
+		System.err.println("SQL Query: " + querySqlText);
 		// TODO: Make this bigger or fix it
 	 //    SearchResult[] results = new SearchResult[0];
 		// int to = numResultsToSkip + numResultsToReturn;
