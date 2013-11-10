@@ -5,6 +5,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import java.io.IOException;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -43,6 +45,19 @@ public class AuctionSearch implements IAuctionSearch {
          * placed at src/edu/ucla/cs/cs144.
          *
          */
+
+	private IndexSearcher searcher = null;
+	private QueryParser parser = null;
+
+
+	/* Call this function before using searcher or parser */
+	private void createSearchEngine() throws IOException
+	{
+		if (searcher == null)
+		    searcher = new IndexSearcher(System.getenv("LUCENE_INDEX") + "/index1");
+		if (parser == null)
+		    parser = new QueryParser("content", new StandardAnalyzer());
+	}
 	
 	public SearchResult[] basicSearch(String query, int numResultsToSkip, 
 			int numResultsToReturn) {
