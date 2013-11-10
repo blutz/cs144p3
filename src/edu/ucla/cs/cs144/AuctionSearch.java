@@ -97,8 +97,10 @@ public class AuctionSearch implements IAuctionSearch {
 		for(int i = 0; i < constraints.length; i++)
 		{
 			String name = constraints[i].getFieldName();
-			if(name == FieldName.ItemName || name == FieldName.Category || name == FieldName.Description)
+			if(name == FieldName.ItemName || name == FieldName.Category 
+				|| name == FieldName.Description)
 			{
+				// This requires a Lucene query
 				if(queryLucene)
 				{
 					queryLuceneText += " OR ";
@@ -118,9 +120,19 @@ public class AuctionSearch implements IAuctionSearch {
 				queryLuceneText += constraints[i].getValue() + ")";
 				System.err.println(queryLuceneText);
 			}
-			else if(name == FieldName.SellerId || name == FieldName.BuyPrice || name == FieldName.BidderId || name == FieldName.EndTime)
+			else if(name == FieldName.SellerId || name == FieldName.BuyPrice 
+				|| name == FieldName.BidderId || name == FieldName.EndTime)
 			{
-
+				// This requres a MySQL query
+				if(querySql)
+				{
+					querySqlText += " OR ";
+				}
+				else
+				{
+					querySqlText = "SELECT ";
+					querySql = true;
+				}
 			}
 		}
 		// TODO: Make this bigger or fix it
