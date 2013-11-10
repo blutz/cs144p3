@@ -78,7 +78,7 @@ public class AuctionSearch implements IAuctionSearch {
 		   results[i] = new SearchResult(doc.get("id"), doc.get("name"));
 		}
 		int to = numResultsToSkip + numResultsToReturn;
-		if (numResultsToReturn == 0)
+		if (numResultsToReturn == 0 || to > results.length)
 			to = results.length;
 		return Arrays.copyOfRange(results, numResultsToSkip, to);
 	} catch (ParseException e)
@@ -103,7 +103,6 @@ public class AuctionSearch implements IAuctionSearch {
 		for(int i = 0; i < constraints.length; i++)
 		{
 			String name = constraints[i].getFieldName();
-			System.err.println("Field name: " + name + " Value: " + constraints[i].getValue());
 			if(name.equals(FieldName.ItemName) 
 				|| name.equals(FieldName.Category) 
 				|| name.equals(FieldName.Description))
@@ -163,8 +162,15 @@ public class AuctionSearch implements IAuctionSearch {
 				}
 			}
 		}
-		System.err.println("Lucene Query: " + queryLuceneText);
-		System.err.println("SQL Query: " + querySqlText + ";");
+		// System.err.println("Lucene Query: " + queryLuceneText);
+		// System.err.println("SQL Query: " + querySqlText + ";");
+
+		// Now actually execute these queries. By the end of this, all results
+		// should be in 'result'
+		SearchResult[] results = new SearchResult[0];
+		SearchResult[] luceneResults = new SearchResult[0];
+		SearchResult[] sqlResults = new SearchResult[0];
+		// If we need to talk to Lucene
 		if(queryLucene)
 		{
 		try
@@ -172,11 +178,11 @@ public class AuctionSearch implements IAuctionSearch {
 			createSearchEngine();
 		    Query parsedQuery = parser.parse(queryLuceneText);
 		    Hits hits = searcher.search(parsedQuery);
-		    SearchResult[] results = new SearchResult[hits.length()];
+			luceneResults = new SearchResult[hits.length()];
 
 		    for(int i = 0; i < hits.length(); i++) {
 			   Document doc = hits.doc(i);
-			   results[i] = new SearchResult(doc.get("id"), doc.get("name"));
+			   luceneResults[i] = new SearchResult(doc.get("id"), doc.get("name"));
 			}
 		} catch (ParseException e)
 		{
@@ -188,15 +194,72 @@ public class AuctionSearch implements IAuctionSearch {
 			return new SearchResult[0];
 		}
 		}
+		// Get the DB connection if we need it
+	try
+	{
+		Connection con = DbManager.getConnection(false);
+		PreparedStatement stmt;
+		// If we ONLY need MySQL (and not lucene)
+		if(querySql && !queryLucene)
+		{
+			stmt = con.prepareStatement(querySqlText + ";");
+		}
+		else
+		{
+			querySqlText += " AND (";
+			for(int i = 0; i < luceneResults.length; i++)
+			{
+				if(i != 0)
+					querySqlText += " OR";
+				querySqlText += " Item.item_id = " + luceneResults[i].getItemId();
+			}
+			stmt = con.prepareStatement(querySqlText + ");");
+		}
+
+		for(int i = 0; i < querySqlParameters.size(); i++)
+		{
+				querySqlParameters.get(i).setParameter(i+1, stmt);
+		}
+		ResultSet rs = stmt.executeQuery();
+		int rsSize = 0;
+		if(rs.last())
+		{
+			rs.last();
+			rsSize = rs.getRow();
+			rs.beforeFirst();
+		}
+		sqlResults = new SearchResult[rsSize];
+
+		for(int i = 0; i < rsSize && rs.next(); i++)
+		{
+			sqlResults[i] = new SearchResult(rs.getString("Item.item_id"), 
+				rs.getString("Item.name"));
+		}
+	} catch (SQLException e)
+	{
+		System.err.println("SQL Exception");
+	}
 
 
-		// TODO: Make this bigger or fix it
-	 //    SearchResult[] results = new SearchResult[0];
-		// int to = numResultsToSkip + numResultsToReturn;
-		// if (numResultsToReturn == 0)
-		// 	to = results.length;
-		// return Arrays.copyOfRange(results, numResultsToSkip, to);
-		return new SearchResult[0];
+		// Now check what we want to return
+		if(queryLucene && !querySql)
+		{
+			int to = numResultsToSkip + numResultsToReturn;
+			if (numResultsToReturn == 0 || to > luceneResults.length)
+				to = luceneResults.length;
+			return Arrays.copyOfRange(luceneResults, numResultsToSkip, to);
+		}
+		else if(querySql)
+		{
+			int to = numResultsToSkip + numResultsToReturn;
+			if (numResultsToReturn == 0 || to > sqlResults.length)
+				to = sqlResults.length;
+			return Arrays.copyOfRange(sqlResults, numResultsToSkip, to);
+		}
+		else
+		{
+			return new SearchResult[0];
+		}
 	}
 
 	public String getXMLDataForItemId(String itemId) {
