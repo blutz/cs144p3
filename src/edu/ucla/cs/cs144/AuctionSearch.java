@@ -169,8 +169,8 @@ public class AuctionSearch implements IAuctionSearch {
 		// Now actually execute these queries. By the end of this, all results
 		// should be in 'result'
 		SearchResult[] results = new SearchResult[0];
-		SearchResult[] luceneResults;
-		SearchResult[] sqlResults;
+		SearchResult[] luceneResults = new SearchResult[0];
+		SearchResult[] sqlResults = new SearchResult[0];
 		// If we need to talk to Lucene
 		if(queryLucene)
 		{
@@ -199,29 +199,42 @@ public class AuctionSearch implements IAuctionSearch {
 	try
 	{
 		Connection con = DbManager.getConnection(false);
+		PreparedStatement stmt;
 		// If we ONLY need MySQL (and not lucene)
 		if(querySql && !queryLucene)
 		{
-			PreparedStatement stmt = con.prepareStatement(querySqlText + ";");
-			for(int i = 0; i < querySqlParameters.size(); i++)
+			stmt = con.prepareStatement(querySqlText + ";");
+		}
+		else
+		{
+			querySqlText += " AND (";
+			for(int i = 0; i < luceneResults.length; i++)
 			{
-					querySqlParameters.get(i).setParameter(i+1, stmt);
+				if(i != 0)
+					querySqlText += " OR";
+				querySqlText += " Item.item_id = " + luceneResults[i].getItemId();
 			}
-			ResultSet rs = stmt.executeQuery();
-			int rsSize = 0;
-			if(rs.last())
-			{
-				rs.last();
-				rsSize = rs.getRow();
-				rs.beforeFirst();
-			}
-			sqlResults = new SearchResult[rsSize];
+			stmt = con.prepareStatement(querySqlText + ");");
+		}
 
-			for(int i = 0; i < rsSize && rs.next(); i++)
-			{
-				sqlResults[i] = new SearchResult(rs.getString("Item.item_id"), 
-					rs.getString("Item.name"));
-			}
+		for(int i = 0; i < querySqlParameters.size(); i++)
+		{
+				querySqlParameters.get(i).setParameter(i+1, stmt);
+		}
+		ResultSet rs = stmt.executeQuery();
+		int rsSize = 0;
+		if(rs.last())
+		{
+			rs.last();
+			rsSize = rs.getRow();
+			rs.beforeFirst();
+		}
+		sqlResults = new SearchResult[rsSize];
+
+		for(int i = 0; i < rsSize && rs.next(); i++)
+		{
+			sqlResults[i] = new SearchResult(rs.getString("Item.item_id"), 
+				rs.getString("Item.name"));
 		}
 	} catch (SQLException e)
 	{
