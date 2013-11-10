@@ -21,6 +21,8 @@ import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import java.util.Date;
 import java.util.Iterator;
 import java.text.SimpleDateFormat;
@@ -288,13 +290,13 @@ public class AuctionSearch implements IAuctionSearch {
         ResultSet rs = query.executeQuery();
         while (rs.next()) {
             item_id = rs.getString("item_id");
-            name = rs.getString("name");
+            name = StringEscapeUtils.escapeXml(rs.getString("name"));
             buy_now_price = "$" + rs.getString("buy_now_price");
             minimum_bid = "$" + rs.getString("minimum_bid");
             started = rs.getString("started");
             ends = rs.getString("ends");
-            seller_id = rs.getString("seller_id");
-            description = rs.getString("description");
+            seller_id = StringEscapeUtils.escapeXml(rs.getString("seller_id"));
+            description = StringEscapeUtils.escapeXml(rs.getString("description"));
         }
 
         query = con.prepareStatement(
@@ -302,7 +304,7 @@ public class AuctionSearch implements IAuctionSearch {
         query.setInt(1, Integer.parseInt(itemId));
         rs = query.executeQuery();
         while (rs.next()) {
-            categories.add(rs.getString("category"));
+            categories.add(StringEscapeUtils.escapeXml(rs.getString("category")));
         }
 
         query = con.prepareStatement(
@@ -311,12 +313,12 @@ public class AuctionSearch implements IAuctionSearch {
         query.setInt(1, Integer.parseInt(itemId));
         rs = query.executeQuery();
         while (rs.next()) {
-            String bidder_id = rs.getString("user_id");
+            String bidder_id = StringEscapeUtils.escapeXml(rs.getString("user_id"));
             String bidder_rating = rs.getString("rating");
             String time = rs.getString("time");
             String amount = "$" + rs.getString("amount");
-            String bidder_location = rs.getString("location");
-            String bidder_country = rs.getString("country");
+            String bidder_location = StringEscapeUtils.escapeXml(rs.getString("location"));
+            String bidder_country = StringEscapeUtils.escapeXml(rs.getString("country"));
 
             xmlBidData += "\t\t<Bid>\n";
             xmlBidData += "\t\t\t<Bidder UserID=\"" + bidder_id + "\" Rating=\""
@@ -359,13 +361,14 @@ public class AuctionSearch implements IAuctionSearch {
         rs = query.executeQuery();
         while (rs.next()) {
             sellerRating = rs.getString("rating");
-            location = rs.getString("location");
-            country = rs.getString("country");
+            location = StringEscapeUtils.escapeXml(rs.getString("location"));
+            country = StringEscapeUtils.escapeXml(rs.getString("country"));
         }
     }
     catch (SQLException e) {
         System.err.println("SQL exception occurred");
     }
+
    		String xmlData = "";
         xmlData += "<Item ItemID=\"" + item_id + "\">\n";
         xmlData += "\t<Name>" + name + "</Name>\n";
