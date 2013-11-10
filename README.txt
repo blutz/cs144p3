@@ -8,39 +8,9 @@ ID: 303886364
 Byron Lutz
 ID: 403945853
 
-PART A.2: DECIDE INDEXES TO CREATE
-==================================
 
-Lucene
+Notes:
 ------
-Create indexes on:
-    Item.name (store & index)
-    Item.description (don't store & index)
-    ItemCategory.category (store & index)
-    And the concatenation of the above three fields (don't store & index)
-And additionally store the fields:
-    Item.item_id (store & don't index)
+We made a little change to project 2: MySQL was treating the backslash character (\) as an escape sequence rather than the standard double quote (""). About four lines were added to project 2's import script to make the MySQL import work correctly for csv outputted by our Java class.
 
-This is because the only fields that need inverted index lookups are name,
-description, and category. However, to be able to talk to MySQL again and know
-what item to reference, we need to store the item_id in Lucene.
-
-MySQL
------
-Create indexes on:
-    Item.seller_id
-    Item.buy_now_price
-    Item.ends
-    Bid.item_id
-    Bid.user_id
-
-These MySQL indexes were chosen because users need to be able to search on item
-name, category, seller, buy price, bidder, ending time, and description.
-Because item name, category, and description only need to be searched using
-inverted indexes, it is a waste to create indexes on them in MySQL.
-
-Indexes on Bid.item_id and Bid.user_id are created because the primary key on
-Bid is (item_id, user_id, time), rather than a single field. Though this extra
-index can be considered a waste, it is a tradeoff for not creating a unique ID
-for each of the bids.
-
+Nothing was changed in Part 3A since the indexes worked fine.
