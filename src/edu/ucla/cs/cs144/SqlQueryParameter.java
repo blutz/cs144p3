@@ -4,10 +4,10 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class SqlQueryParameter {
-	private String parameter;
-	private String type;
+	public String parameter;
+	public String type;
 
-	// Type can be: timestamp, int, string
+	// Type can be: timestamp, string, float
 	public SqlQueryParameter(String parameter, String type)
 	{
 		this.parameter = parameter;

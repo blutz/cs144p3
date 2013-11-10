@@ -5,6 +5,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import java.io.IOException;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -94,6 +97,7 @@ public class AuctionSearch implements IAuctionSearch {
 		boolean queryLucene = false;
 		String queryLuceneText = "";
 		String querySqlText = "";
+		List<SqlQueryParameter> querySqlParameters = new ArrayList<SqlQueryParameter>();
 		// Get the Lucene and MySQL queries
 		for(int i = 0; i < constraints.length; i++)
 		{
@@ -139,25 +143,52 @@ public class AuctionSearch implements IAuctionSearch {
 				if(name.equals(FieldName.SellerId))
 				{
 					querySqlText += " Item.seller_id = ?";
+					querySqlParameters.add(new SqlQueryParameter(constraints[i].getValue(), "string"));
 				}
 				else if (name.equals(FieldName.BuyPrice))
 				{
 					querySqlText += " Item.buy_now_price = ?";
+					querySqlParameters.add(new SqlQueryParameter(constraints[i].getValue(), "float"));
 				}
 				else if (name.equals(FieldName.BidderId))
 				{
 					querySqlText += " Bid.user_id = ?";
+					querySqlParameters.add(new SqlQueryParameter(constraints[i].getValue(), "string"));
 				}
 				else if (name.equals(FieldName.EndTime))
 				{
 					querySqlText += " Item.ends = ?";
+					querySqlParameters.add(new SqlQueryParameter(constraints[i].getValue(), "timestamp"));
 				}
 			}
 		}
-		if(querySql)
-			querySqlText += ";";
 		System.err.println("Lucene Query: " + queryLuceneText);
-		System.err.println("SQL Query: " + querySqlText);
+		System.err.println("SQL Query: " + querySqlText + ";");
+		if(queryLucene)
+		{
+		try
+		{
+			createSearchEngine();
+		    Query parsedQuery = parser.parse(queryLuceneText);
+		    Hits hits = searcher.search(parsedQuery);
+		    SearchResult[] results = new SearchResult[hits.length()];
+
+		    for(int i = 0; i < hits.length(); i++) {
+			   Document doc = hits.doc(i);
+			   results[i] = new SearchResult(doc.get("id"), doc.get("name"));
+			}
+		} catch (ParseException e)
+		{
+			return new SearchResult[0];
+		}
+		catch (IOException e)
+		{
+			System.err.println("IOException occured");
+			return new SearchResult[0];
+		}
+		}
+
+
 		// TODO: Make this bigger or fix it
 	 //    SearchResult[] results = new SearchResult[0];
 		// int to = numResultsToSkip + numResultsToReturn;
