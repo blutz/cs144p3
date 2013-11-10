@@ -17,49 +17,82 @@ public class AuctionSearchTest {
 		String reply = as.echo(message);
 		System.out.println("Reply: " + reply);
 
-		String query = "superman";
+		System.out.println("============");
+		System.out.println("Basic Search");
+		System.out.println("============");
+
+        String query = "superman";
+		System.out.println("");
+		System.out.println("superman (72)");
 		SearchResult[] basicResults = as.basicSearch(query, 0, 0);
-		System.out.println("Basic Seacrh Query: " + query);
 		System.out.println("Received " + basicResults.length + " results");
-		for(SearchResult result : basicResults) {
-			System.out.println(result.getItemId() + ": " + result.getName());
-		}
+		// for(SearchResult result : basicResults) {
+		// 	System.out.println(result.getItemId() + ": " + result.getName());
+		// }
 
-		System.out.println("Advanced Search:");
+        query = "kitchenware";
+		System.out.println("");
+		System.out.println("kitchenware (1462)");
+		basicResults = as.basicSearch(query, 0, 0);
+		System.out.println("Received " + basicResults.length + " results");
+		// for(SearchResult result : basicResults) {
+		// 	System.out.println(result.getItemId() + ": " + result.getName());
+		// }
 
-		SearchConstraint constraint =
-		    new SearchConstraint(FieldName.BuyPrice, "5.99");
-		SearchConstraint[] constraints = {constraint};
+        query = "star trek";
+		System.out.println("");
+		System.out.println("star trek (767)");
+		basicResults = as.basicSearch(query, 0, 0);
+		System.out.println("Received " + basicResults.length + " results");
+		// for(SearchResult result : basicResults) {
+		// 	System.out.println(result.getItemId() + ": " + result.getName());
+		// }
+
+        System.out.println("");
+		System.out.println("===============");
+		System.out.println("Advanced Search");
+		System.out.println("===============");
+
+        System.out.println("");
         System.out.println("BuyPrice:5.99 (1)");
+		SearchConstraint constraint = new SearchConstraint(FieldName.BuyPrice, "5.99");
+		SearchConstraint[] constraints = {constraint};
+
 		SearchResult[] advancedResults = as.advancedSearch(constraints, 0, 0);
 		System.out.println("Received " + advancedResults.length + " results");
 		for(SearchResult result : advancedResults) {
 			System.out.println(result.getItemId() + ": " + result.getName());
 		}
 
+        System.out.println("");
+        System.out.println("ItemName:pan, Category:kitchenware (16)");
+
         constraint = new SearchConstraint(FieldName.ItemName, "pan");
         SearchConstraint constraint2 = new SearchConstraint(FieldName.Category, "kitchenware");
         constraints = new SearchConstraint[]{constraint, constraint2};
 		advancedResults = as.advancedSearch(constraints, 0, 0);
-        System.out.println("ItemName:pan, Category:kitchenware (16)");
 		System.out.println("Received " + advancedResults.length + " results");
 		for(SearchResult result : advancedResults) {
 			System.out.println(result.getItemId() + ": " + result.getName());
 		}
 
-        constraint = new SearchConstraint(FieldName.ItemName, "Precious Moments");
-        constraint2 = new SearchConstraint(FieldName.Category, "waltera317a");
-        constraints = new SearchConstraint[]{constraint, constraint2};
+        System.out.println("");
         System.out.println("ItemName:Precious Moments, SellerId:waltera317a (2)");
+        constraint = new SearchConstraint(FieldName.ItemName, "Precious Moments");
+        constraint2 = new SearchConstraint(FieldName.SellerId, "waltera317a");
+        constraints = new SearchConstraint[]{constraint, constraint2};
+
 		advancedResults = as.advancedSearch(constraints, 0, 0);
 		System.out.println("Received " + advancedResults.length + " results");
 		for(SearchResult result : advancedResults) {
 			System.out.println(result.getItemId() + ": " + result.getName());
 		}
 
+        System.out.println("");
+        System.out.println("EndTime:Dec-14-01 21:00:05 (1)");
         constraint = new SearchConstraint(FieldName.EndTime, "Dec-14-01 21:00:05");
         constraints = new SearchConstraint[]{constraint};
-        System.out.println("EndTime:Dec-14-01 21:00:05 (1)");
+
 		advancedResults = as.advancedSearch(constraints, 0, 0);
 		System.out.println("Received " + advancedResults.length + " results");
 		for(SearchResult result : advancedResults) {
