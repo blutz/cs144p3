@@ -59,4 +59,11 @@
 
     </target>
 
+    <target name="run-indexer" depends="compile">
+        <java classname="edu.ucla.cs.cs144.Indexer" failonerror="true" fork="yes">
+            <classpath refid="classpath"/>
+            <jvmarg value="-DLUCENE_INDEX=${env.LUCENE_INDEX}"/>
+        </java>
+    </target>
+
 </project>
