@@ -103,7 +103,7 @@ public class AuctionSearch implements IAuctionSearch {
 				// This requires a Lucene query
 				if(queryLucene)
 				{
-					queryLuceneText += " OR ";
+					queryLuceneText += " AND ";
 				}
 				else
 				{
@@ -118,7 +118,6 @@ public class AuctionSearch implements IAuctionSearch {
 					queryLuceneText += "description:(";
 
 				queryLuceneText += constraints[i].getValue() + ")";
-				System.err.println(queryLuceneText);
 			}
 			else if(name == FieldName.SellerId || name == FieldName.BuyPrice 
 				|| name == FieldName.BidderId || name == FieldName.EndTime)
@@ -135,6 +134,7 @@ public class AuctionSearch implements IAuctionSearch {
 				}
 			}
 		}
+		System.err.println("Lucene Query: " + queryLuceneText);
 		// TODO: Make this bigger or fix it
 	 //    SearchResult[] results = new SearchResult[0];
 		// int to = numResultsToSkip + numResultsToReturn;
