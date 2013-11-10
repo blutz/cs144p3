@@ -94,11 +94,14 @@ public class AuctionSearch implements IAuctionSearch {
 		boolean queryLucene = false;
 		String queryLuceneText = "";
 		String querySqlText = "";
+		// Get the Lucene and MySQL queries
 		for(int i = 0; i < constraints.length; i++)
 		{
 			String name = constraints[i].getFieldName();
-			if(name == FieldName.ItemName || name == FieldName.Category 
-				|| name == FieldName.Description)
+			System.err.println("Field name: " + name + " Value: " + constraints[i].getValue());
+			if(name.equals(FieldName.ItemName) 
+				|| name.equals(FieldName.Category) 
+				|| name.equals(FieldName.Description))
 			{
 				// This requires a Lucene query
 				if(queryLucene)
@@ -110,31 +113,51 @@ public class AuctionSearch implements IAuctionSearch {
 					queryLuceneText = "";
 					queryLucene = true;
 				}
-				if (name == FieldName.ItemName)
+				if (name.equals(FieldName.ItemName))
 					queryLuceneText += "name:(";
-				else if (name == FieldName.Category)
+				else if (name.equals(FieldName.Category))
 					queryLuceneText += "category:(";
-				else if (name == FieldName.Description)
+				else if (name.equals(FieldName.Description))
 					queryLuceneText += "description:(";
 
 				queryLuceneText += constraints[i].getValue() + ")";
 			}
-			else if(name == FieldName.SellerId || name == FieldName.BuyPrice 
-				|| name == FieldName.BidderId || name == FieldName.EndTime)
+			else if(name.equals(FieldName.SellerId) || name.equals(FieldName.BuyPrice) 
+				|| name.equals(FieldName.BidderId) || name.equals(FieldName.EndTime))
 			{
 				// This requres a MySQL query
 				if(querySql)
 				{
-					querySqlText += " OR ";
+					querySqlText += " AND ";
 				}
 				else
 				{
-					querySqlText = "SELECT ";
+					querySqlText = "SELECT Item.item_id, Item.name FROM Item " +
+						"LEFT JOIN Bid ON (Item.item_id = Bid.item_id) WHERE";
 					querySql = true;
+				}
+				if(name.equals(FieldName.SellerId))
+				{
+					querySqlText += " Item.seller_id = ?";
+				}
+				else if (name.equals(FieldName.BuyPrice))
+				{
+					querySqlText += " Item.buy_now_price = ?";
+				}
+				else if (name.equals(FieldName.BidderId))
+				{
+					querySqlText += " Bid.user_id = ?";
+				}
+				else if (name.equals(FieldName.EndTime))
+				{
+					querySqlText += " Item.ends = ?";
 				}
 			}
 		}
+		if(querySql)
+			querySqlText += ";";
 		System.err.println("Lucene Query: " + queryLuceneText);
+		System.err.println("SQL Query: " + querySqlText);
 		// TODO: Make this bigger or fix it
 	 //    SearchResult[] results = new SearchResult[0];
 		// int to = numResultsToSkip + numResultsToReturn;
