@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.PreparedStatement;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -164,6 +165,13 @@ public class AuctionSearch implements IAuctionSearch {
 		}
 		System.err.println("Lucene Query: " + queryLuceneText);
 		System.err.println("SQL Query: " + querySqlText + ";");
+
+		// Now actually execute these queries. By the end of this, all results
+		// should be in 'result'
+		SearchResult[] results = new SearchResult[0];
+		SearchResult[] luceneResults;
+		SearchResult[] sqlResults;
+		// If we need to talk to Lucene
 		if(queryLucene)
 		{
 		try
@@ -171,11 +179,11 @@ public class AuctionSearch implements IAuctionSearch {
 			createSearchEngine();
 		    Query parsedQuery = parser.parse(queryLuceneText);
 		    Hits hits = searcher.search(parsedQuery);
-		    SearchResult[] results = new SearchResult[hits.length()];
+			luceneResults = new SearchResult[hits.length()];
 
 		    for(int i = 0; i < hits.length(); i++) {
 			   Document doc = hits.doc(i);
-			   results[i] = new SearchResult(doc.get("id"), doc.get("name"));
+			   luceneResults[i] = new SearchResult(doc.get("id"), doc.get("name"));
 			}
 		} catch (ParseException e)
 		{
@@ -187,10 +195,41 @@ public class AuctionSearch implements IAuctionSearch {
 			return new SearchResult[0];
 		}
 		}
+		// Get the DB connection if we need it
+	try
+	{
+		Connection con = DbManager.getConnection(false);
+		// If we ONLY need MySQL (and not lucene)
+		if(querySql && !queryLucene)
+		{
+			PreparedStatement stmt = con.prepareStatement(querySqlText + ";");
+			for(int i = 0; i < querySqlParameters.size(); i++)
+			{
+					querySqlParameters.get(i).setParameter(i+1, stmt);
+			}
+			ResultSet rs = stmt.executeQuery();
+			int rsSize = 0;
+			if(rs.last())
+			{
+				rs.last();
+				rsSize = rs.getRow();
+				rs.beforeFirst();
+			}
+			sqlResults = new SearchResult[rsSize];
+
+			for(int i = 0; i < rsSize && rs.next(); i++)
+			{
+				sqlResults[i] = new SearchResult(rs.getString("Item.item_id"), 
+					rs.getString("Item.name"));
+			}
+		}
+	} catch (SQLException e)
+	{
+		System.err.println("SQL Exception");
+	}
 
 
 		// TODO: Make this bigger or fix it
-	 //    SearchResult[] results = new SearchResult[0];
 		// int to = numResultsToSkip + numResultsToReturn;
 		// if (numResultsToReturn == 0)
 		// 	to = results.length;
