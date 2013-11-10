@@ -264,6 +264,21 @@ public class AuctionSearch implements IAuctionSearch {
 		}
 	}
 
+	private String parseDate(String date)
+	{
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS");
+		SimpleDateFormat outputFormat = new SimpleDateFormat("MMM-dd-yy HH:mm:ss");
+
+    try {
+        Date parsed = format.parse(date);
+        return outputFormat.format(parsed);
+    } catch(java.text.ParseException pe) {
+        System.err.println("Cannot parse \"" + date + "\"");
+        return date;
+    }
+
+	}
+
 	public String getXMLDataForItemId(String itemId) {
         String item_id = "",
                 name = "",
@@ -293,8 +308,8 @@ public class AuctionSearch implements IAuctionSearch {
             name = StringEscapeUtils.escapeXml(rs.getString("name"));
             buy_now_price = "$" + rs.getString("buy_now_price");
             minimum_bid = "$" + rs.getString("minimum_bid");
-            started = rs.getString("started");
-            ends = rs.getString("ends");
+            started = this.parseDate(rs.getString("started"));
+            ends = this.parseDate(rs.getString("ends"));
             seller_id = StringEscapeUtils.escapeXml(rs.getString("seller_id"));
             description = StringEscapeUtils.escapeXml(rs.getString("description"));
         }
@@ -312,10 +327,11 @@ public class AuctionSearch implements IAuctionSearch {
             "FROM Bid LEFT JOIN User ON User.user_id = Bid.user_id WHERE item_id = ?");
         query.setInt(1, Integer.parseInt(itemId));
         rs = query.executeQuery();
+
         while (rs.next()) {
             String bidder_id = StringEscapeUtils.escapeXml(rs.getString("user_id"));
             String bidder_rating = rs.getString("rating");
-            String time = rs.getString("time");
+            String time = this.parseDate(rs.getString("time"));
             String amount = "$" + rs.getString("amount");
             String bidder_location = StringEscapeUtils.escapeXml(rs.getString("location"));
             String bidder_country = StringEscapeUtils.escapeXml(rs.getString("country"));
