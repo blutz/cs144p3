@@ -398,7 +398,7 @@ public class AuctionSearch implements IAuctionSearch {
         xmlData += "\t<First_Bid>" + minimum_bid + "</First_Bid>\n";
         xmlData += "\t<Number_of_Bids>" + num_bids + "</Number_of_Bids>\n";
         if (num_bids.equals("0")) {
-            xmlData += "<Bids/>\n";
+            xmlData += "\t<Bids/>\n";
         } else {
             xmlData += "\t<Bids>\n";
             xmlData += xmlBidData;
