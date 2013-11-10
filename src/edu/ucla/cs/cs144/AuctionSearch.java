@@ -20,6 +20,7 @@ import org.apache.lucene.search.Query;
 import java.util.Date;
 import java.util.Iterator;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 
 import edu.ucla.cs.cs144.DbManager;
 import edu.ucla.cs.cs144.SearchConstraint;
@@ -72,7 +73,10 @@ public class AuctionSearch implements IAuctionSearch {
 		   Document doc = hits.doc(i);
 		   results[i] = new SearchResult(doc.get("id"), doc.get("name"));
 		}
-		return results;
+		int to = numResultsToSkip + numResultsToReturn;
+		if (numResultsToReturn == 0)
+			to = results.length;
+		return Arrays.copyOfRange(results, numResultsToSkip, to);
 	} catch (ParseException e)
 	{
 		return new SearchResult[0];
