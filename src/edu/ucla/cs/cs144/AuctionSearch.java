@@ -61,8 +61,21 @@ public class AuctionSearch implements IAuctionSearch {
 	
 	public SearchResult[] basicSearch(String query, int numResultsToSkip, 
 			int numResultsToReturn) {
-		// TODO: Your code here!
+	try
+	{
+		createSearchEngine();
+	    Query parsedQuery = parser.parse(query);
+	    Hits hits = searcher.search(parsedQuery);
 		return new SearchResult[0];
+	} catch (ParseException e)
+	{
+		return new SearchResult[0];
+	}
+	catch (IOException e)
+	{
+		System.err.println("IOException occured");
+		return new SearchResult[0];
+	}
 	}
 
 	public SearchResult[] advancedSearch(SearchConstraint[] constraints, 
