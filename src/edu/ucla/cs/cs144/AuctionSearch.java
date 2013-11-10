@@ -90,7 +90,45 @@ public class AuctionSearch implements IAuctionSearch {
 
 	public SearchResult[] advancedSearch(SearchConstraint[] constraints, 
 			int numResultsToSkip, int numResultsToReturn) {
-		// TODO: Your code here!
+		boolean querySql = false;
+		boolean queryLucene = false;
+		String queryLuceneText = "";
+		String querySqlText = "";
+		for(int i = 0; i < constraints.length; i++)
+		{
+			String name = constraints[i].getFieldName();
+			if(name == FieldName.ItemName || name == FieldName.Category || name == FieldName.Description)
+			{
+				if(queryLucene)
+				{
+					queryLuceneText += " OR ";
+				}
+				else
+				{
+					queryLuceneText = "";
+					queryLucene = true;
+				}
+				if (name == FieldName.ItemName)
+					queryLuceneText += "name:(";
+				else if (name == FieldName.Category)
+					queryLuceneText += "category:(";
+				else if (name == FieldName.Description)
+					queryLuceneText += "description:(";
+
+				queryLuceneText += constraints[i].getValue() + ")";
+				System.err.println(queryLuceneText);
+			}
+			else if(name == FieldName.SellerId || name == FieldName.BuyPrice || name == FieldName.BidderId || name == FieldName.EndTime)
+			{
+
+			}
+		}
+		// TODO: Make this bigger or fix it
+	 //    SearchResult[] results = new SearchResult[0];
+		// int to = numResultsToSkip + numResultsToReturn;
+		// if (numResultsToReturn == 0)
+		// 	to = results.length;
+		// return Arrays.copyOfRange(results, numResultsToSkip, to);
 		return new SearchResult[0];
 	}
 
